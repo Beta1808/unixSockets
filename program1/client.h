@@ -1,5 +1,3 @@
-#pragma once
-
 #ifndef CLIENT_H
 #define CLIENT_H
 
@@ -9,6 +7,8 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <cstring>
+#include <mutex>
 
 class Client {
 public:
@@ -22,27 +22,30 @@ public:
 
     ~Client();
 
-    int CreateSocket();
+    int createSocket();
 
-    void SendMessage(const char *data);
+    void sendMessage(const char *data);
 
-    bool ConnectToAddress();
-    bool ConnectToAddress(sockaddr_in &address);
+    bool Bind();
 
-    sockaddr_in GetAddress() const;
-    int GetSocket() const;
-    int GetDomain() const;
-    int GetType() const;
-    int GetPort() const;
+    bool isConnected();
+
+    sockaddr_in getAddress() const;
+    int getSocket() const;
+    int getDomain() const;
+    int getType() const;
+    int getPort() const;
 private:
-    sockaddr_in _address{};
-    int _listener{};
-    int _client_socket{};
-    int _domain;
-    int _type;
-    int _port;
+    std::mutex data_mutex;
+
+    sockaddr_in address_{};
+    int listener_{};
+    int client_socket_{};
+    int domain_;
+    int type_;
+    int port_;
 };
 
 
 
-#endif //CLIENTSERVER_SERVER_H
+#endif //CLIENT_H

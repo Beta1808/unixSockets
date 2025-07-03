@@ -1,69 +1,79 @@
 #include "client.h"
 
 Client::Client(int domain, int type, int port):
-            _domain(domain),
-            _type(type),
-            _port(port)
+            domain_(domain),
+            type_(type),
+            port_(port)
 {
 }
 
 Client::~Client()
 {
-    close(_client_socket);
+	if (shutdown(client_socket_, SHUT_RDWR) == -1)
+		std::cout << "Ошибка при закрытии соединения.\n";
+	if (close(client_socket_) == -1)
+		std::cout << "Ошибка при закрытии сокета.\n";
 }
 
-int Client::CreateSocket()
+int Client::createSocket()
 {
-    _client_socket = socket(_domain, _type, _port);
-    if(_client_socket < 0)
+    client_socket_ = socket(domain_, type_, port_);
+    if(client_socket_ < 0)
     {
         std::cerr << "Error: clientSocket" << std::endl;
         return 1;
     }
-    return _client_socket;
+    return client_socket_;
 }
 
-void Client::SendMessage(const char *data)
+void Client::sendMessage(const char *data)
 {
-    send(_client_socket, data, strlen(data), 0);
+    send(client_socket_, data, strlen(data), 0);
 }
 
-sockaddr_in Client::GetAddress() const
+sockaddr_in Client::getAddress() const
 {
-    return _address;
+    return address_;
 }
 
-int Client::GetSocket() const
+int Client::getSocket() const
 {
-    return _client_socket;
+    return client_socket_;
 }
 
-bool Client::ConnectToAddress()
+bool Client::Bind()
 {
-    _address.sin_family = _domain;
-    _address.sin_port = htons(_port); // или любой другой порт...
-    _address.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+    address_.sin_family = domain_;
+    address_.sin_port = htons(port_); 
+    address_.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 
-    if(connect(_client_socket, (sockaddr *)&_address, sizeof(_address)) < 0) {
+    if(connect(client_socket_, (sockaddr *)&address_, sizeof(address_)) < 0) {
         std::cerr << "Error: connect" << std::endl;
         return false;
     }
     return true;
 }
 
-int Client::GetDomain() const
+bool Client::isConnected() // проверка подключения
 {
-    return _domain;
+    if(connect(client_socket_, (sockaddr *)&address_, sizeof(address_)) < 0)
+    {}
+    return false;
 }
 
-int Client::GetType() const
+int Client::getDomain() const
 {
-    return _type;
+    return domain_;
 }
 
-int Client::GetPort() const
+int Client::getType() const
 {
-    return _port;
+    return type_;
+}
+
+int Client::getPort() const
+{
+    return port_;
 }
 
 
